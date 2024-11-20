@@ -131,26 +131,89 @@ public class DataService
     }
 
     public PN OpretPN(int patientId, int laegemiddelId, double antal, DateTime startDato, DateTime slutDato) {
-        // TODO: Implement!
-        return null!;
+        Patient patient = db.Patienter.Find(patientId);
+        Laegemiddel laegemiddel = db.Laegemiddler.Find(laegemiddelId);
+
+        if (patient == null || laegemiddel == null)
+        {
+            throw new Exception("Patient eller lægemiddel ikke fundet");
+        }
+
+        var pn = new PN(startDato, slutDato, antal, laegemiddel);
+
+        patient.ordinationer.Add(pn);
+        db.Ordinationer.Add(pn);
+        db.SaveChanges();
+        return pn;
     }
 
     public DagligFast OpretDagligFast(int patientId, int laegemiddelId, 
         double antalMorgen, double antalMiddag, double antalAften, double antalNat, 
         DateTime startDato, DateTime slutDato) {
+        Patient patient = db.Patienter.Find(patientId);
+        Laegemiddel laegemiddel = db.Laegemiddler.Find(laegemiddelId);
 
-        // TODO: Implement!
-        return null!;
+        if (patient == null || laegemiddel == null)
+        {
+            throw new Exception("Patient eller lægemiddel ikke fundet");
+        }
+
+        var dagligFast = new DagligFast(startDato, slutDato, laegemiddel, antalMorgen, antalMiddag, antalAften, antalNat);
+
+        patient.ordinationer.Add(dagligFast);
+        db.Ordinationer.Add(dagligFast);
+        db.SaveChanges();
+
+        return dagligFast;
     }
 
-    public DagligSkæv OpretDagligSkaev(int patientId, int laegemiddelId, Dosis[] doser, DateTime startDato, DateTime slutDato) {
-        // TODO: Implement!
-        return null!;
+    public DagligSkæv OpretDagligSkaev(int patientId, int laegemiddelId, Dosis[] doser, DateTime startDato, DateTime slutDato)
+    {
+
+        // Find patienten og lægemidlet
+        var patient = db.Patienter.Include(p => p.ordinationer).FirstOrDefault(p => p.PatientId == patientId);
+        var laegemiddel = db.Laegemiddler.FirstOrDefault(l => l.LaegemiddelId == laegemiddelId);
+
+        if (patient == null || laegemiddel == null)
+        {
+            throw new ArgumentException("Patient eller lægemiddel ikke fundet.");
+        }
+
+        // Opret ordinationen
+        var dagligSkaev = new DagligSkæv(startDato, slutDato, laegemiddel, doser);
+
+        // Tilføj til patientens ordinationer og databasen
+        patient.ordinationer.Add(dagligSkaev);
+        db.Ordinationer.Add(dagligSkaev);
+        db.SaveChanges();
+
+        return dagligSkaev;
     }
 
     public string AnvendOrdination(int id, Dato dato) {
-        // TODO: Implement!
-        return null!;
+        
+        var ordination = db.PNs.Include(o => o.dates).FirstOrDefault(o => o.OrdinationId == id);
+
+        if (ordination == null)
+        {
+            throw new Exception("Ordination ikke fundet");
+        }
+
+        else if (ordination.startDen > dato.dato || ordination.slutDen < dato.dato)
+        {
+            return "Dato uden for ordinationens gyldighedsperiode";
+        }
+
+        else if (ordination.givDosis(dato)) {
+        db.SaveChanges();
+            return "Ordination registreret";
+        }
+
+        else
+        {
+            return "Dato allerede registreret";
+        }
+        
     }
 
     /// <summary>
@@ -161,8 +224,18 @@ public class DataService
     /// <param name="laegemiddel"></param>
     /// <returns></returns>
 	public double GetAnbefaletDosisPerDøgn(int patientId, int laegemiddelId) {
-        // TODO: Implement!
-        return -1;
+        Patient patient = db.Patienter.Find(patientId);
+        Laegemiddel laegemiddel = db.Laegemiddler.Find(laegemiddelId);
+
+        if (patient.vaegt < 25) 
+        { return laegemiddel.enhedPrKgPrDoegnLet; }
+        
+        else if (patient.vaegt > 25 && patient.vaegt < 120)
+        { return laegemiddel.enhedPrKgPrDoegnNormal; }
+        
+        else
+        { return laegemiddel.enhedPrKgPrDoegnTung; }
+        
 	}
     
 }
