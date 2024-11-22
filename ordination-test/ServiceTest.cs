@@ -36,10 +36,28 @@ public class ServiceTest
         Assert.AreEqual(1, service.GetDagligFaste().Count());
 
         service.OpretDagligFast(patient.PatientId, lm.LaegemiddelId,
-            -2, 2, 1, 0, DateTime.Now, DateTime.Now.AddDays(3));
+            0, 0, 0, 1000, DateTime.Now, DateTime.Now.AddDays(3));
 
         Assert.AreEqual(2, service.GetDagligFaste().Count());
     }
+
+    
+    [TestMethod]
+   
+    public void OpretDagligSkæv_DuplicateTimestamps()
+    {
+        // Arrange
+        Patient patient = service.GetPatienter().First();
+        Laegemiddel lm = service.GetLaegemidler().First();
+
+        // Act: Forsøg at oprette en ordination med to doser med samme tidspunkt
+        service.OpretDagligSkaev(patient.PatientId, lm.LaegemiddelId,
+                       new Dosis[] {
+                       new Dosis(DateTime.Now, 1000),
+                       new Dosis(DateTime.Now, 500) // Samme tidspunkt som ovenfor
+                       }, DateTime.Now, DateTime.Now);
+    }
+
 
     [TestMethod]
     [ExpectedException(typeof(ArgumentNullException))]

@@ -158,7 +158,32 @@ public class DataService
             throw new Exception("Patient eller lægemiddel ikke fundet");
         }
 
-        
+        // Check if the dosis is negative
+        if (antalMorgen < 0 || antalMiddag < 0 || antalAften < 0 || antalNat < 0)
+        {
+            throw new ArgumentException("Dosis mængde må ikke være negativ");
+        }
+
+        // Check if the accumulated dosis is 0
+        if (antalMorgen == 0 && antalMiddag == 0 && antalAften == 0 && antalNat == 0)
+        {
+            throw new ArgumentException("Dosis mængde må ikke være 0");
+        }
+
+
+        // Beregn anbefalet døgndosis
+        double anbefaletDoegnDosis = GetAnbefaletDosisPerDøgn(patientId, laegemiddelId);
+
+        // Beregn samlet dosis
+        double samletDosis = antalMorgen + antalMiddag + antalAften + antalNat;
+
+        // Valider dosis
+        if (samletDosis > anbefaletDoegnDosis)
+        {
+            throw new ArgumentException($"Samlet dosis ({samletDosis}) overstiger anbefalet døgndosis ({anbefaletDoegnDosis})");
+        }
+
+
         var dagligFast = new DagligFast(startDato, slutDato, laegemiddel, antalMorgen, antalMiddag, antalAften, antalNat);
 
         patient.ordinationer.Add(dagligFast);
@@ -178,6 +203,36 @@ public class DataService
         if (patient == null || laegemiddel == null)
         {
             throw new ArgumentException("Patient eller lægemiddel ikke fundet.");
+        }
+
+        // Check if the dosis is negative
+        foreach (var dosis in doser)
+        {
+            if (dosis.antal < 0)
+            {
+                throw new ArgumentException("Dosis mængde må ikke være negativ");
+            }
+        }
+
+        // Check if the time chosen is valid
+        foreach (var dosis in doser)
+        {
+            if (dosis.tid.Hour < 0 || dosis.tid.Hour > 23 || dosis.tid.Minute < 0 || dosis.tid.Minute > 59 || dosis.tid.Second < 0 || dosis.tid.Second > 59)
+            {
+                throw new ArgumentException("Ugyldig tidspunkt");
+            }
+        }
+
+        //check if two dosis are at the same time
+        for (int i = 0; i < doser.Length; i++)
+        {
+            for (int j = i + 1; j < doser.Length; j++)
+            {
+                if (doser[i].tid == doser[j].tid)
+                {
+                    throw new ArgumentException("To doser kan ikke være på samme tidspunkt");
+                }
+            }
         }
 
         // Opret ordinationen
