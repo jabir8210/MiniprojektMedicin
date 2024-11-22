@@ -228,13 +228,13 @@ public class DataService
         Laegemiddel laegemiddel = db.Laegemiddler.Find(laegemiddelId);
 
         if (patient.vaegt < 25) 
-        { return laegemiddel.enhedPrKgPrDoegnLet; }
+        { return patient.vaegt * laegemiddel.enhedPrKgPrDoegnLet; }
         
-        else if (patient.vaegt > 25 && patient.vaegt < 120)
-        { return laegemiddel.enhedPrKgPrDoegnNormal; }
+        else if (patient.vaegt >= 25 && patient.vaegt < 120)
+        { return patient.vaegt * laegemiddel.enhedPrKgPrDoegnNormal; }
         
         else
-        { return laegemiddel.enhedPrKgPrDoegnTung; }
+        { return patient.vaegt * laegemiddel.enhedPrKgPrDoegnTung; }
         
 	}
     
