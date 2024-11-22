@@ -158,6 +158,7 @@ public class DataService
             throw new Exception("Patient eller lægemiddel ikke fundet");
         }
 
+        
         var dagligFast = new DagligFast(startDato, slutDato, laegemiddel, antalMorgen, antalMiddag, antalAften, antalNat);
 
         patient.ordinationer.Add(dagligFast);
