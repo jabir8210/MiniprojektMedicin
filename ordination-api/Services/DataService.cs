@@ -256,6 +256,12 @@ public class DataService
             }
         }
 
+        // check if date is valid
+        if (startDato > slutDato)
+        {
+            throw new ArgumentException("Ugyldig dato");
+        }
+
         //check if two dosis are at the same time
         for (int i = 0; i < doser.Length; i++)
         {
@@ -287,6 +293,8 @@ public class DataService
         {
             throw new Exception("Ordination ikke fundet");
         }
+
+        //check if ordination exceeds the max
 
         else if (ordination.startDen > dato.dato || ordination.slutDen < dato.dato)
         {
