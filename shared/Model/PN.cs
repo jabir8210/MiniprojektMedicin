@@ -25,9 +25,46 @@ public class PN : Ordination {
         return false;
     }
 
-    public override double doegnDosis() {
-        return getAntalGangeGivet() * antalEnheder / antalDage();
+    public override double doegnDosis()
+    {
+        double sum = 0;
 
+        if (dates.Count() > 0)
+        {
+            DateTime min = dates.First().dato;
+            DateTime max = dates.First().dato;
+
+            foreach (Dato d in dates)
+            {
+                if (d.dato < min)
+                {
+                    min = d.dato;
+                }
+
+                if (d.dato > max)
+                {
+                    max = d.dato;
+                }
+            }
+
+            if (max.Equals(min))
+            {
+                int dage = (int)(max - min).TotalDays + 1;
+                sum = samletDosis() / dage;
+            }
+            else if ((int)(max - min).TotalDays == 0)
+            {
+                int dage = (int)(max - min).TotalDays + 2;
+                sum = samletDosis() / dage;
+            }
+            else
+            {
+                int dage = (int)(max - min).TotalDays + 1;
+                sum = samletDosis() / dage;
+            }
+        }
+
+        return sum;
     }
 
 
