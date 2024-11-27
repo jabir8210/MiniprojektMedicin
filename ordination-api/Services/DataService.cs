@@ -139,6 +139,39 @@ public class DataService
             throw new Exception("Patient eller lægemiddel ikke fundet");
         }
 
+        // Check if the dosis is negative
+        if (antal < 0)
+        {
+            throw new ArgumentException("Dosis mængde må ikke være negativ");
+        }
+
+        // Check if the dosis is 0
+        if (antal == 0)
+        {
+            throw new ArgumentException("Dosis mængde må ikke være 0");
+        }
+
+        // overskridelse af anbefalet dosis
+        if (antal > GetAnbefaletDosisPerDøgn(patientId, laegemiddelId))
+        {
+            throw new ArgumentException("Dosis overstiger anbefalet dosis");
+        }
+
+        // indenfor gyldighedsperiode
+        if (startDato > slutDato)
+        {
+            throw new ArgumentException("Udenfor gyldighedsperioden");
+        }
+
+
+        // Check for registrerede doser
+        if (startDato == slutDato && antal == 0)
+        {
+            throw new ArgumentException("Ingen doser registreret for denne periode");
+        }
+
+
+
         var pn = new PN(startDato, slutDato, antal, laegemiddel);
 
         patient.ordinationer.Add(pn);
